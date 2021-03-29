@@ -34,6 +34,11 @@ class Datatables
      */
     protected $options;
 
+    /**	
+     * @var bool	
+     */	
+    protected $isDirectQuery = false;	
+
     /**
      * Custom escapes
      * @var array
@@ -168,6 +173,22 @@ class Datatables
 
         return $this;
     }
+    	
+    /**	
+     * @return void	
+     */	
+    public function setIsDirectQuery(bool $isDirectQuery): void	
+    {	
+        $this->isDirectQuery = $isDirectQuery;	
+    }	
+
+    /**	
+     * @return bool	
+     */	
+    public function getIsDirectQuery(): bool	
+    {	
+        return $this->isDirectQuery;	
+    }
 
     /**
      * @param string $query
@@ -175,7 +196,7 @@ class Datatables
      */
     public function query($query): Datatables
     {
-        $this->builder = new QueryBuilder($query, $this->options, $this->db);
+        $this->builder = new QueryBuilder($query, $this->isDirectQuery, $this->options, $this->db);
         $this->columns = $this->builder->columns();
 
         return $this;
@@ -190,7 +211,6 @@ class Datatables
         $this->builder->setFilteredQuery();
         $this->builder->setFullQuery();
         $this->builder->setEscapes($this->escapes);
-
         $this->setResponseData();
 
         return $this;

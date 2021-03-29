@@ -72,4 +72,12 @@ class Option
     {
         return $this->request->get('columns') ?? [];
     }
+
+    /**	
+     * @return bool	
+     */	
+    public function isDirectQuery(): bool	
+    {	
+        return $this->request->get('isDirectQuery') ?? false;	
+    }
 }

@@ -82,7 +82,7 @@ class QueryBuilder
      * @param Option $options
      * @param DatabaseInterface $db
      */
-    public function __construct($query, Option $options, DatabaseInterface $db)
+    public function __construct($query, bool $isDirectQuery, Option $options, DatabaseInterface $db)
     {
         $this->options = $options;
         $this->db = $db;
@@ -96,7 +96,7 @@ class QueryBuilder
             $this->columns->append(new Column($name));
         }
 
-        $this->setQuery($query);
+        $this->setQuery($query, $isDirectQuery);
         $this->hasDefaultOrder = $this->hasOrderBy($query);
     }
 
@@ -160,9 +160,9 @@ class QueryBuilder
     /**
      * @param $query
      */
-    public function setQuery($query): void
-    {
-        $this->query = new Query($this->db->makeQueryString($query, $this->columns));
+    public function setQuery($query, $isDirectQuery): void	
+    {	
+        $this->query = new Query($this->db->makeQueryString($query, $this->columns, $isDirectQuery));	
     }
 
     /**
@@ -180,7 +180,7 @@ class QueryBuilder
     public function setFullQuery(): void
     {
         $this->full = clone $this->filtered;
-        $this->full->set($this->filtered.$this->orderBy().$this->limit());
+        $this->full->set($this->filtered.$this->orderBy().$this->upto());
     }
 
     /**
@@ -274,6 +274,14 @@ class QueryBuilder
         }
 
         return implode(' AND ', $look);
+    }
+    /**	
+     * @return string	
+     */	
+    protected function upto(): string	
+    {	
+      $take = $this->options->length() ?: 10;	
+      return " limit ".$take;	
     }
 
     /**
