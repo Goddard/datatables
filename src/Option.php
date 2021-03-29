@@ -74,10 +74,18 @@ class Option
     }
 
     /**	
-     * @return bool	
+     * @return string	
      */	
-    public function isDirectQuery(): bool	
+    public function begin_field(): string	
     {	
-        return $this->request->get('isDirectQuery') ?? false;	
+        return $this->request->get('begin')['field'] ?? '';
+    }
+
+    /**	
+     * @return string	
+     */	
+    public function begin_value(): string	
+    {	
+        return $this->request->get('begin')['value'] ?? '';
     }
 }

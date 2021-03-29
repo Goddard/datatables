@@ -33,7 +33,7 @@ class DatatablesTest extends TestCase
               'host'     => 'localhost',
               'port'     => '3306',
               'username' => 'root',
-              'password' => 'root',
+              'password' => 'mr435194',
               'database' => 'skeleton' ];
         $this->db = new Datatables(new MySQL($config), $this->request);
 
@@ -58,21 +58,26 @@ class DatatablesTest extends TestCase
     public function testReturnsDirectQuery() 
     {
       // page size option
-      $this->request->query->set('length', '9');
-      // set isDirectQuery before query. it would be false as default to make original code works.
-      $this->db->setIsDirectQuery(true);
-      $this->db->query('select id, name, surname from mytable');
+      $this->request->query->set('length', '3');
+      // page begin option (similar to offset but using primary key field)
+      $this->request->query->set('begin', ['field' => 'id', 'value' => '5']);
+      /**
+       * Set isDirectQuery before query. it would be false as default to make original code works.
+       * or you can put second parameter as boolean for isDirectQuery
+       *  */ 
+      // $this->db->setIsDirectQuery(true);
+      $this->db->query('select id, name, surname from mytable', true);
 
       $datatables = $this->db->generate()->toArray();
 
       // query result
       $this->assertSame(11, $datatables['recordsTotal']);
       // filtered query result
-      $this->assertSame(11, $datatables['recordsFiltered']);
+      $this->assertSame(6, $datatables['recordsFiltered']);
       // full query result
-      $this->assertSame(9, count($datatables['data']));
+      $this->assertSame(3, count($datatables['data']));
 
-      $directQuery = "select id, name, surname from mytable ORDER BY id asc limit 9";
+      $directQuery = "select id, name, surname from mytable where id > 5 ORDER BY id asc limit 3";
       $this->assertSame($directQuery, $this->db->getQuery()->sql);
     }
 

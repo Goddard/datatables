@@ -220,16 +220,26 @@ class QueryBuilder
      */
     protected function filter(Query $query): string
     {
+        $whereQuery = '';
+
         $filter = array_filter([
             $this->filterGlobal($query),
             $this->filterIndividual($query),
         ]);
 
         if (\count($filter) > 0) {
-            return $this->db->makeWhereString($filter);
+            $whereQuery = $this->db->makeWhereString($filter);
         }
 
-        return '';
+        $field = $this->options->begin_field();
+        $value = $this->options->begin_value();
+
+        if ($field && $value) {
+          $pageQuery = $field." > ".$value;
+          $whereQuery = $whereQuery ? $whereQuery." ".$pageQuery : " where ".$pageQuery;          
+        }
+    
+        return $whereQuery;
     }
 
     /**
@@ -333,6 +343,12 @@ class QueryBuilder
         if(!empty($this->orderByAppend))
             $o[] = $this->orderByAppend;
 
+        // order by primary key for paginate option
+        $field = $this->options->begin_field();
+        if ($field && !in_array($field." asc", $o)) {
+          $o[] = $field." asc";
+        }
+        
         return $this->db->makeOrderByString($o);
     }
 

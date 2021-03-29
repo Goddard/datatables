@@ -194,9 +194,10 @@ class Datatables
      * @param string $query
      * @return Datatables
      */
-    public function query($query): Datatables
-    {
-        $this->builder = new QueryBuilder($query, $this->isDirectQuery, $this->options, $this->db);
+    public function query($query, $isDirectQuery = false): Datatables
+    { 
+        $isDirect = $isDirectQuery || $this->isDirectQuery; 
+        $this->builder = new QueryBuilder($query, $isDirect, $this->options, $this->db);
         $this->columns = $this->builder->columns();
 
         return $this;
