@@ -2,6 +2,7 @@
 
 namespace Ozdemir\Datatables\Test;
 
+use Ozdemir\Datatables\DB\MySQL;
 use Ozdemir\Datatables\DB\SQLite;
 use Ozdemir\Datatables\Datatables;
 use PHPUnit\Framework\TestCase;
@@ -20,10 +21,23 @@ class DatatablesTest extends TestCase
 
     public function setUp(): void
     {
-        $sqlconfig = __DIR__.'/../fixtures/test.db';
+        // $sqlconfig = __DIR__.'/../fixtures/test.db';
         $this->request = Request::create(array(), ['draw' => 1]);
 
-        $this->db = new Datatables(new SQLite($sqlconfig), $this->request);
+        /**
+         * Mysql DB credentails here
+         * Please update username, password, database name
+         * For data source, you can use dump file `skeleton.sql` on root directory
+         */
+        $config = [ 
+              'host'     => 'localhost',
+              'port'     => '3306',
+              'username' => 'root',
+              'password' => 'mr435194',
+              'database' => 'skeleton' ];
+        $this->db = new Datatables(new MySQL($config), $this->request);
+
+        // $this->db = new Datatables(new SQLite($sqlconfig), $this->request);
     }
 
     public function tearDown(): void
@@ -35,6 +49,52 @@ class DatatablesTest extends TestCase
     {
         $this->assertInstanceOf(Datatables::class, $this->db);
     }
+
+    /**
+     * ===================================================================
+     * Direct query test here
+     * ===================================================================
+     */ 
+    public function testReturnsDirectQuery() 
+    {
+      // page size option
+      $this->request->query->set('length', '3');
+      // page begin option (similar to offset but using primary key field)
+      $this->request->query->set('begin', ['field' => 'id', 'value' => '5']);
+      /**
+       * Set isDirectQuery before query. it would be false as default to make original code works.
+       * or you can put second parameter as boolean for isDirectQuery
+       *  */ 
+      // $this->db->setIsDirectQuery(true);
+      $this->db->query('select id, name, surname from mytable', true);
+
+      $datatables = $this->db->generate()->toArray();
+
+      // query result
+      $this->assertSame(11, $datatables['recordsTotal']);
+      // filtered query result
+      $this->assertSame(6, $datatables['recordsFiltered']);
+      // full query result
+      $this->assertSame(3, count($datatables['data']));
+
+      $directQuery = "select id, name, surname from mytable where id > 5 ORDER BY id asc limit 3";
+      $this->assertSame($directQuery, $this->db->getQuery()->sql);
+    }
+
+    public function testReturnsSubQuery()
+    {
+      $this->request->query->set('length', '9');
+      // $this->db->setIsDirectQuery(false);  // optional since default is false
+      $this->db->query('select id, name, surname from mytable');
+
+      $datatables = $this->db->generate()->toArray();
+      $this->assertSame(9, count($datatables['data']));
+      
+      $subQuery = "SELECT id, name, surname FROM (select id, name, surname from mytable)t ORDER BY id asc limit 9";
+      $this->assertSame($subQuery, $this->db->getQuery()->sql);
+    }
+    
+    // ===================================================================
 
     public function testReturnsRecordCounts()
     {

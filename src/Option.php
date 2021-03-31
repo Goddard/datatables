@@ -72,4 +72,20 @@ class Option
     {
         return $this->request->get('columns') ?? [];
     }
+
+    /**	
+     * @return string	
+     */	
+    public function begin_field(): string	
+    {	
+        return $this->request->get('begin')['field'] ?? '';
+    }
+
+    /**	
+     * @return string	
+     */	
+    public function begin_value(): string	
+    {	
+        return $this->request->get('begin')['value'] ?? '';
+    }
 }

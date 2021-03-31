@@ -82,7 +82,7 @@ class QueryBuilder
      * @param Option $options
      * @param DatabaseInterface $db
      */
-    public function __construct($query, Option $options, DatabaseInterface $db)
+    public function __construct($query, bool $isDirectQuery, Option $options, DatabaseInterface $db)
     {
         $this->options = $options;
         $this->db = $db;
@@ -96,7 +96,7 @@ class QueryBuilder
             $this->columns->append(new Column($name));
         }
 
-        $this->setQuery($query);
+        $this->setQuery($query, $isDirectQuery);
         $this->hasDefaultOrder = $this->hasOrderBy($query);
     }
 
@@ -160,9 +160,9 @@ class QueryBuilder
     /**
      * @param $query
      */
-    public function setQuery($query): void
-    {
-        $this->query = new Query($this->db->makeQueryString($query, $this->columns));
+    public function setQuery($query, $isDirectQuery): void	
+    {	
+        $this->query = new Query($this->db->makeQueryString($query, $this->columns, $isDirectQuery));	
     }
 
     /**
@@ -180,7 +180,7 @@ class QueryBuilder
     public function setFullQuery(): void
     {
         $this->full = clone $this->filtered;
-        $this->full->set($this->filtered.$this->orderBy().$this->limit());
+        $this->full->set($this->filtered.$this->orderBy().$this->upto());
     }
 
     /**
@@ -220,16 +220,26 @@ class QueryBuilder
      */
     protected function filter(Query $query): string
     {
+        $whereQuery = '';
+
         $filter = array_filter([
             $this->filterGlobal($query),
             $this->filterIndividual($query),
         ]);
 
         if (\count($filter) > 0) {
-            return $this->db->makeWhereString($filter);
+            $whereQuery = $this->db->makeWhereString($filter);
         }
 
-        return '';
+        $field = $this->options->begin_field();
+        $value = $this->options->begin_value();
+
+        if ($field && $value) {
+          $pageQuery = $field." > ".$value;
+          $whereQuery = $whereQuery ? $whereQuery." ".$pageQuery : " where ".$pageQuery;          
+        }
+    
+        return $whereQuery;
     }
 
     /**
@@ -274,6 +284,14 @@ class QueryBuilder
         }
 
         return implode(' AND ', $look);
+    }
+    /**	
+     * @return string	
+     */	
+    protected function upto(): string	
+    {	
+      $take = $this->options->length() ?: 10;	
+      return " limit ".$take;	
     }
 
     /**
@@ -325,6 +343,12 @@ class QueryBuilder
         if(!empty($this->orderByAppend))
             $o[] = $this->orderByAppend;
 
+        // order by primary key for paginate option
+        $field = $this->options->begin_field();
+        if ($field && !in_array($field." asc", $o)) {
+          $o[] = $field." asc";
+        }
+        
         return $this->db->makeOrderByString($o);
     }
 
