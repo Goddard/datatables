@@ -227,6 +227,14 @@ class Datatables
         return array_map([$this, 'prepareRowData'], $data);
     }
 
+
+    /**
+     * @return QueryBuilder
+     */
+    public function getBuilder() : QueryBuilder {
+        return $this->builder;
+    }
+
     /**
      * @param $row
      * @return array
