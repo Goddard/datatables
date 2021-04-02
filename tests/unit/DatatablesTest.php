@@ -1,11 +1,11 @@
 <?php
 
-namespace Ozdemir\Datatables\Test;
+namespace Goddard\Datatables\Test;
 
-use Ozdemir\Datatables\DB\SQLite;
-use Ozdemir\Datatables\Datatables;
+use Goddard\Datatables\DB\SQLite;
+use Goddard\Datatables\Datatables;
 use PHPUnit\Framework\TestCase;
-use Ozdemir\Datatables\Http\Request;
+use Goddard\Datatables\Http\Request;
 
 class DatatablesTest extends TestCase
 {
