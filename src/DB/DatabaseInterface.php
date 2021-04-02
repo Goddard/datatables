@@ -39,7 +39,7 @@ interface DatabaseInterface
      * @param ColumnCollection $columns
      * @return mixed
      */
-    public function makeQueryString(string $query, ColumnCollection $columns, bool $isDirectQuery);
+    public function makeQueryString(string $query, ColumnCollection $columns);
 
     /**
      * @param Query $query

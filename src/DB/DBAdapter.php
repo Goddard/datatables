@@ -40,9 +40,8 @@ abstract class DBAdapter implements DatabaseInterface
      * @param ColumnCollection $columns
      * @return string
      */
-    public function makeQueryString(string $query, ColumnCollection $columns, bool $isDirectQuery): string
+    public function makeQueryString(string $query, ColumnCollection $columns): string
     {
-        if ($isDirectQuery) return $query;
         return 'SELECT '.implode(', ', $columns->names())." FROM ($query)t";
     }
 
