@@ -276,7 +276,7 @@ class Datatables
      */
     public function toJson(): string
     {
-        header('Content-type: application/json;');
+        //header('Content-type: application/json;');
 
         return json_encode($this->response, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
     }
